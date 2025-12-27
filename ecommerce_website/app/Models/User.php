@@ -6,11 +6,70 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
+
+    /**
+     * Check if user is admin.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Check if user is vendor.
+     */
+    public function isVendor(): bool
+    {
+        return $this->role === 'vendor';
+    }
+
+    /**
+     * Check if user is customer.
+     */
+    public function isCustomer(): bool
+    {
+        return $this->role === 'customer';
+    }
+
+    /**
+     * Check if user is approved.
+     */
+    public function isApproved(): bool
+    {
+        return $this->approved_at !== null;
+    }
+
+    public function products(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\Product::class, 'vendor_id');
+    }
+
+    public function cart(): HasOne
+    {
+        return $this->hasOne(\App\Models\Cart::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(\App\Models\Order::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(\App\Models\Review::class);
+    }
+
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(\App\Models\Address::class);
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -21,6 +80,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'is_active',
+        'approved_at',
     ];
 
     /**
@@ -43,6 +105,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'approved_at' => 'datetime',
+            'is_active' => 'boolean',
         ];
     }
 }
